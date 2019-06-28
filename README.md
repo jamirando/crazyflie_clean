@@ -1,5 +1,5 @@
 # crazyflie_clean
-A clean version of crazyflie stuff... meow
+A clean version of crazyflie stuff... meow meow
 
 ## Repository organization
 This is a ROS repository. The main ROS workspace is, unsurprisingly, located in the `ros/` directory accessible from the root of the repository. Within the ROS workspace, there are multiple packages (in `ros/src/`) pertaining to different aspects of the testbed. The core SDK is located in the `crazyflie_ros` directory (which contains multiple packages). This has not been altered in any meaningful way from the raw version availaible [here](https://github.com/whoenig/crazyflie_ros). Other packages' functionality should be fairly clear from the name, e.g. `crazyflie_lqr` provides several LQR controllers, and `crazyflie_state_estimator` provides multiple different state estimators.

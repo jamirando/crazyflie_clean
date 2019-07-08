@@ -128,6 +128,6 @@
 
     <param name="robot_description"
            command="$(find xacro)/xacro.py
-                    $(find crazyflie_description)/urdf/crazyflie.urdf.xacro" />
+                    $(find crazyflie_description)/urdf/crazyflie2.urdf.xacro" />
   </node>
 </launch>

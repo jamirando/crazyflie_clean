@@ -54,6 +54,21 @@
 #include <std_msgs/Empty.h>
 #include <math.h>
 
+//Jonric
+#include <dji_sdk/dji_sdk.h>
+#include <dji_sdk/DroneTaskControl.h>
+#include <dji_sdk/SetLocalPosRef.h>
+#include <dji_sdk/SDKControlAuthority.h>
+#include <dji_sdk/QueryDroneVersion.h>
+#include <tf/tf.h>
+#include <string>
+#include <std_msgs/UInt8.h>
+#include <sensor_msgs/NavSatFix.h>
+#include <sensor_msgs/Joy.h>
+#include <geometry_msgs/Vector3Stamped.h>
+#include <geometry_msgs/PointStamped.h>
+//..
+
 namespace crazyflie_takeoff {
 
 class TakeoffServer {
@@ -70,15 +85,15 @@ private:
   // Load parameters and register callbacks.
   bool LoadParameters(const ros::NodeHandle& n);
   bool RegisterCallbacks(const ros::NodeHandle& n);
-
+  
   // Takeoff service. Set in_flight_ flag to true.
   bool TakeoffService(std_srvs::Empty::Request& req,
                       std_srvs::Empty::Response& res);
 
-  // Takeoff service. Set in_flight_ flag to true.
+  // Landing service. Set in_flight_ flag to flase.
   bool LandService(std_srvs::Empty::Request& req,
                    std_srvs::Empty::Response& res);
-
+  
   // Timer callback for refreshing landing control signal.
   void TimerCallback(const ros::TimerEvent& e);
 
@@ -114,6 +129,37 @@ private:
   // Naming and initialization.
   bool initialized_;
   std::string name_;
+
+  //Jonric:
+  bool ObtainControl();
+  bool SetLocalRef();
+  bool M100Drone();
+  bool TakeOffLand(int task);
+  bool LandService();
+
+  void GPSCallback(const sensor_msgs::NavSatFix::ConstPtr& msg);
+  void FlightStatCallback(const std_msgs::UInt8::ConstPtr& msg);
+  void LocalPosCallback(const geometry_msgs::PointStamped::ConstPtr& msg);
+  void RCCallback(const sensor_msgs::Joy::ConstPtr& msg);
+  void VelocityCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg);
+
+  ros::ServiceClient drone_task_service;
+  ros::ServiceClient control_authority_service;
+  ros::ServiceClient local_reference_service;
+  ros::ServiceClient drone_version_service;
+
+  ros::Subscriber gps_sub_;
+  ros::Subscriber flight_status_sub_;
+  ros::Subscriber local_pos_sub_;
+  ros::Subscriber rc_sub_;
+  ros::Subscriber vel_sub_;
+
+  sensor_msgs::NavSatFix current_gps;
+  geometry_msgs::Point current_local_pos_;
+  geometry_msgs::Vector3 current_velocity_;
+  uint8_t flight_status_ = 0;
+  //..
+
 }; //\class TakeoffServer
 
 } //\crazyflie_takeoff

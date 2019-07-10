@@ -177,7 +177,7 @@ void NearHoverSimulator::ControlCallback(
   u_(1) = msg->control.pitch;
   u_(2) = msg->control.yaw_dot;
   u_(3) = msg->control.thrust;
-
+  //std::cout << "thrust = " << u_(3) << std::endl;
   received_control_ = true;
 }
 

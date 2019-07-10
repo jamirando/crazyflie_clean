@@ -177,7 +177,8 @@ void NearHoverSimulatorCoupled7D::ControlCallback(
   u_(1) = msg->control.pitch;
   u_(2) = msg->control.yaw_dot;
   u_(3) = msg->control.thrust;
-
+  //std::cout << "thrust = " << u_(3);
+  //ROS_INFO("roll = %lf\npitch = %lf\nyaw = %lf\nthrust = %lf\n", u_(0),u_(1),u_(2),u_(3));
   received_control_ = true;
 }
 

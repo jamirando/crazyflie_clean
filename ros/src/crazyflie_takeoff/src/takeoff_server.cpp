@@ -73,7 +73,7 @@ bool TakeoffServer::Initialize(const ros::NodeHandle& n) {
     if(!TakeoffService()){
       ROS_ERROR("%s: Takeoff initialization failed!", name_.c_str());
       return false;
-    } 
+    }
   }
   else{
     ROS_ERROR("%s: Not M100 drone!", name_.c_str());
@@ -147,7 +147,7 @@ bool TakeoffServer::RegisterCallbacks(const ros::NodeHandle& n) {
   flight_status_sub_ = nl.subscribe("/dji_sdk/flight_status",10,&TakeoffServer::FlightStatCallback,this);
 
   gps_sub_ = nl.subscribe("/dji_sdk/gps_position",10,&TakeoffServer::GPSCallback,this);
- 
+
   local_pos_sub_ = nl.subscribe("/dji_sdk/local_position",10, &TakeoffServer::LocalPosCallback,this);
 
   rc_sub_ = nl.subscribe("/dji_sdk/rc",10,&TakeoffServer::RCCallback,this);
@@ -240,6 +240,7 @@ TakeoffService(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
     ROS_ERROR("%s: Local reference failed!", name_.c_str());
     return false;
   }
+
   if(!TakeOffLand(4)){
     return false;
   }
@@ -329,7 +330,7 @@ void TakeoffServer::RCCallback(const sensor_msgs::Joy::ConstPtr& msg)
     control_pub_.publish(msg2);
 
     // Sleep a little, then rerun the loop.
-    
+
     ros::spinOnce();
     crazyflie_msgs::PositionVelocityStateStamped reference;
     reference.header.stamp = ros::Time::now();
@@ -354,8 +355,8 @@ bool TakeoffServer::ObtainControl(){
   dji_sdk::SDKControlAuthority Authority;
   Authority.request.control_enable = 1;
   control_authority_service.call(Authority);
-  //ros::Duration(0.10).sleep();
-  //ros::spinOnce();
+  ros::Duration(0.10).sleep();
+  ros::spinOnce();
 
   if(!Authority.response.result){
     ROS_ERROR("%s: Obtain control failed!", name_.c_str());
@@ -384,9 +385,12 @@ bool TakeoffServer::SetLocalRef(){
 }*/// RETURN HERE: JEFF!
 
 bool TakeoffServer::TakeOffLand(int task){
+  ROS_INFO("%s: Task is %d", name_.c_str(), task);
   dji_sdk::DroneTaskControl TaskNumber;
   TaskNumber.request.task = task;
   drone_task_service.call(TaskNumber);
+  ros::Duration(0.10).sleep();
+  ros::spinOnce();
 
   if(!TaskNumber.response.result){
     ROS_ERROR("%s: Drone task service failed!", name_.c_str());

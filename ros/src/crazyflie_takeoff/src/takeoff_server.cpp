@@ -106,7 +106,7 @@ bool TakeoffServer::LoadParameters(const ros::NodeHandle& n) {
   if (!nl.getParam("duration/open_loop", open_loop_duration_))
     open_loop_duration_ = 1.0;
   if (!nl.getParam("duration/hover", hover_duration_))
-    hover_duration_ = 10.0;//5.0;
+    hover_duration_ = 5.0;
 
   // Service names.
   if (!nl.getParam("srv/takeoff", takeoff_srv_name_))
@@ -209,7 +209,7 @@ LandService(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
 
     // Slowly decrement thrust.
     msg.control.thrust = std::max(0.0, crazyflie_utils::constants::G -
-                                  /*5.0*/2.5 * (ros::Time::now() - right_now).toSec());
+                                  /*5.0*/2 * (ros::Time::now() - right_now).toSec());
 
     control_pub_.publish(msg);
 
@@ -218,7 +218,7 @@ LandService(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
   }
 
   in_flight_ = false;
-
+  //ros::Duration(2).sleep();
   // Return true.
   return true;
 }
@@ -242,8 +242,11 @@ TakeoffService(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
   }
 
   if(!TakeOffLand(4)){
+    ROS_ERROR("%s: Takeoff Failed!:", name_.c_str());
     return false;
   }
+  //ros::Duration(0.01).sleep();
+  //ros::spinOnce();
   //..
 
   // Lift off, and after a short wait return.
@@ -280,7 +283,7 @@ TakeoffService(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
   // Give LQR time to get there.
   ros::Duration(hover_duration_).sleep();
   ros::spinOnce();
-  ROS_ERROR("Flight Status: %d", flight_status_);
+  ROS_INFO("Flight Status: %d", flight_status_);
   if (flight_status_==3){
     in_flight_ = true;
   }
@@ -317,7 +320,7 @@ void TakeoffServer::RCCallback(const sensor_msgs::Joy::ConstPtr& msg)
 {
   if ((in_flight_)) //&& (msg->axes[0] != 0) || (msg->axes[1] != 0) || (msg->axes[2] != 0) || (msg->axes[3] != 0))
   {
-    ROS_ERROR("roll:%f pitch:%f yaw:%f throttle:%f", msg->axes[0], msg->axes[1], msg->axes[2], msg->axes[3]);
+    //ROS_ERROR("roll:%f pitch:%f yaw:%f throttle:%f", msg->axes[0], msg->axes[1], msg->axes[2], msg->axes[3]);
     crazyflie_msgs::ControlStamped msg2;
     msg2.header.stamp = ros::Time::now();
 
@@ -328,8 +331,6 @@ void TakeoffServer::RCCallback(const sensor_msgs::Joy::ConstPtr& msg)
     // Offset gravity, plus a little extra to lift off.
     msg2.control.thrust = crazyflie_utils::constants::G + 0.2;
     control_pub_.publish(msg2);
-
-    // Sleep a little, then rerun the loop.
 
     ros::spinOnce();
     crazyflie_msgs::PositionVelocityStateStamped reference;
@@ -385,12 +386,11 @@ bool TakeoffServer::SetLocalRef(){
 }*/// RETURN HERE: JEFF!
 
 bool TakeoffServer::TakeOffLand(int task){
-  ROS_INFO("%s: Task is %d", name_.c_str(), task);
   dji_sdk::DroneTaskControl TaskNumber;
   TaskNumber.request.task = task;
+  //ros::Duration(0.10).sleep();
+  //ros::spinOnce();
   drone_task_service.call(TaskNumber);
-  ros::Duration(0.10).sleep();
-  ros::spinOnce();
 
   if(!TaskNumber.response.result){
     ROS_ERROR("%s: Drone task service failed!", name_.c_str());
